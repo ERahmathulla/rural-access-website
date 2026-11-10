@@ -1,5 +1,5 @@
 import { createClient, type QueryParams } from "@sanity/client";
-import { cacheLife } from "next/cache";
+import { connection } from "next/server";
 
 import { upcomingFilter } from "@/lib/events";
 import type {
@@ -19,25 +19,22 @@ const client = createClient({
   perspective: "published",
 });
 
-// Sanity requests skip Next's fetch cache, which outlives deployments and keeps
-// responses for 15 minutes, so that "use cache" below is the only cache here.
-function query<T>(groq: string, params: QueryParams = {}) {
+// Every Sanity read happens at request time, so each visitor gets current
+// content. Nothing is cached in Next.js: connection() keeps these reads out of
+// prerendering, and "no-store" skips Next's fetch cache, which outlives
+// deployments. Sanity's own CDN still answers the queries.
+async function query<T>(groq: string, params: QueryParams = {}) {
+  await connection();
   return client.fetch<T>(groq, params, { cache: "no-store" });
 }
 
-// Each fetcher uses the "minutes" cache profile: content refreshes after 60
-// seconds, and nothing older than an hour is served, so a quiet site doesn't
-// greet its next visitor with long-gone events.
-
 export async function getSiteSettings() {
-  "use cache";
-  cacheLife("minutes");
   return query<SiteSettings | null>(`*[_id == "siteSettings"][0]`);
 }
 
 export async function getUpcomingEvents() {
-  "use cache";
-  cacheLife("minutes");
+  // Read the clock only once the request has arrived.
+  await connection();
   return query<EventDoc[]>(
     `*[_type == "event" && hidden != true && ${upcomingFilter("$now")}] | order(start asc)`,
     { now: new Date().toISOString() },
@@ -45,8 +42,6 @@ export async function getUpcomingEvents() {
 }
 
 export async function getCalendarEvent(id: string) {
-  "use cache";
-  cacheLife("minutes");
   return query<EventDoc | null>(
     `*[_type == "event" && _id == $id && hidden != true][0]`,
     { id },
@@ -58,8 +53,6 @@ function roleRank(officer: Officer) {
 }
 
 export async function getOfficers() {
-  "use cache";
-  cacheLife("minutes");
   const officers = await query<Officer[]>(
     `*[_type == "officer" && hidden != true]`,
   );
@@ -72,8 +65,6 @@ export async function getOfficers() {
 }
 
 export async function getVolunteerOpportunities() {
-  "use cache";
-  cacheLife("minutes");
   return query<VolunteerOpportunity[]>(
     `*[_type == "volunteerOpportunity" && hidden != true] | order(coalesce(order, 9999) asc, title asc)`,
   );

@@ -36,7 +36,7 @@ npm.cmd run seed -- --replace   # resets these documents, overwriting Studio edi
 
 ## Notes for developers
 
-- Content caching lives in [lib/content.ts](lib/content.ts). Each fetcher uses `"use cache"` with a 60-second refresh. Sanity requests use `cache: "no-store"` on purpose: without it, Next's fetch cache keeps responses for 15 minutes and across deployments.
+- Sanity reads live in [lib/content.ts](lib/content.ts). Pages that show Sanity content render on every request (`instant = false`), with no Next.js cache, so each visitor sees current content. Sanity requests use `cache: "no-store"` on purpose: without it, Next's fetch cache keeps responses for 15 minutes and across deployments.
 - `lib/events.ts` holds the one definition of "upcoming". The website query, the Studio's Upcoming and Past lists, and the browser check that hides events on an older cached page all use it.
 - Sanity document IDs must not contain dots. Sanity hides dotted IDs from public visitors.
 - The site's CSS loads from `components/site-shell.tsx`, not the root layout, to keep Tailwind's resets out of the Studio.

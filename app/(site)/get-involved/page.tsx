@@ -20,6 +20,9 @@ import {
   POINTS,
 } from "@/sanity/options";
 
+// Render on every request so each visitor sees current Sanity content.
+export const instant = false;
+
 export const metadata: Metadata = {
   title: "Events & Get Involved",
   description:

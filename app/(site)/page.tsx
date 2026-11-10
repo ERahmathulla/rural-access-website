@@ -14,6 +14,9 @@ import {
 } from "@/lib/home-copy";
 import { FULL_NAME, SITE_NAME } from "@/lib/site";
 
+// Render on every request so each visitor sees current Sanity content.
+export const instant = false;
+
 export default async function HomePage() {
   const [settings, officers] = await Promise.all([
     getSiteSettings(),
