@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Atkinson_Hyperlegible, Fraunces } from "next/font/google";
+import { Suspense } from "react";
 
+import { GoogleAnalytics } from "@/components/google-analytics";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 
 const headingFont = Fraunces({
@@ -53,7 +55,14 @@ export default function RootLayout({
       data-scroll-behavior="smooth"
       className={`${headingFont.variable} ${bodyFont.variable}`}
     >
-      <body style={{ margin: 0 }}>{children}</body>
+      <body style={{ margin: 0 }}>
+        {children}
+        {process.env.VERCEL_ENV === "production" && (
+          <Suspense fallback={null}>
+            <GoogleAnalytics />
+          </Suspense>
+        )}
+      </body>
     </html>
   );
 }

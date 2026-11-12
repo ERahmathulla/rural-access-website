@@ -36,6 +36,10 @@ export function SiteFooter() {
           University. Registration does not constitute university endorsement,
           support, or concurrence.
         </p>
+        <p className="mt-2 max-w-3xl text-sm">
+          This site uses Google Analytics to count visits. It doesn&apos;t
+          collect your name or email address.
+        </p>
       </div>
     </footer>
   );
